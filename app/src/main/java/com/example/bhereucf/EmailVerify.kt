@@ -1,6 +1,7 @@
 package com.example.bhereucf
 
 import android.content.Intent
+import android.graphics.Paint
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageButton
@@ -18,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.bhereucf.ui.theme.BHereUCFTheme
 
-class ForgotPassword : ComponentActivity() {
+class EmailVerify : ComponentActivity() {
 
     lateinit var backButton : Button
 
@@ -26,12 +27,15 @@ class ForgotPassword : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.forgotpwlayout)
+        setContentView(R.layout.emailverifylayout)
 
         backButton = findViewById(R.id.back_btn)
         backButton.setOnClickListener {
             finish() // This will go back to the previous activity
 
         }
+
+        val resendEmail: TextView = findViewById(R.id.resendEmail)
+        resendEmail.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG)
     }
 }

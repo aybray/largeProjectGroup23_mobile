@@ -54,7 +54,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="80dp"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="47dp"
         android:layout_marginEnd="80dp"
         android:background="@drawable/rounded_corners"
         android:backgroundTint="@color/light_green"
@@ -118,6 +118,20 @@
             android:textColorHint="@color/black"
             android:textSize="20sp" />
 
+        <EditText
+            android:id="@+id/email_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/aqua_blue"
+            android:hint="Email"
+            android:inputType="text"
+            android:padding="18dp"
+            android:textColor="@color/black"
+            android:textColorHint="@color/black"
+            android:textSize="20sp" />
+
         <RadioGroup
             android:id="@+id/radio_group"
             android:layout_width="wrap_content"
@@ -132,24 +146,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
+                android:button="@drawable/radio_button_selector"
                 android:layoutDirection="rtl"
                 android:paddingStart="8dp"
                 android:text="S"
                 android:textColor="@color/black"
-                android:textSize="20sp"
-                android:button="@drawable/radio_button_selector"/>
+                android:textSize="20sp" />
 
             <RadioButton
                 android:id="@+id/radio_teacher"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
+                android:button="@drawable/radio_button_selector"
                 android:layoutDirection="rtl"
                 android:paddingStart="8dp"
                 android:text="T"
                 android:textColor="@color/black"
-                android:textSize="20sp"
-                android:button="@drawable/radio_button_selector"/>
+                android:textSize="20sp" />
 
         </RadioGroup>
 
