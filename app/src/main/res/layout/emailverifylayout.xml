@@ -48,7 +48,8 @@
             app:layout_constraintVertical_bias="0.486" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/linearLayout"
         android:layout_width="wrap_content"
         android:layout_height="254dp"
         android:layout_below="@+id/constraintLayout"
@@ -59,48 +60,36 @@
         android:layout_marginEnd="80dp"
         android:background="@drawable/rounded_corners"
         android:backgroundTint="@color/light_green"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:gravity="center_horizontal">
 
         <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:text="Enter your email to receive the 6-digit code"
-            android:textColor="#050505"
-            android:textSize="20sp" />
-
-        <EditText
-            android:id="@+id/username_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/rounded_corners"
-            android:backgroundTint="@color/aqua_blue"
-            android:hint="Email"
-            android:inputType="text"
-            android:padding="18dp"
-            android:textColor="@color/black"
-            android:textColorHint="@color/black"
-            android:textSize="20sp" />
-
-        <Button
-            android:id="@+id/create_btn"
-            android:layout_width="166dp"
-            android:layout_height="42dp"
-            android:layout_marginStart="7dp"
-            android:layout_marginTop="24dp"
-            android:background="@drawable/rounded_corners"
-            android:backgroundTint="@color/blue"
-            android:text="Send"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-            android:textColor="@color/white"
+            android:id="@+id/resendEmail"
+            android:layout_width="181dp"
+            android:layout_height="37dp"
+            android:layout_marginStart="35dp"
+            android:layout_marginTop="156dp"
+            android:autoLink="all"
+            android:linksClickable="false"
+            android:text="Resend Email"
+            android:textAlignment="center"
+            android:textColor="#1B5CD8"
             android:textSize="20sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-    </LinearLayout>
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="206dp"
+            android:layout_height="88dp"
+            android:layout_marginStart="22dp"
+            android:layout_marginTop="43dp"
+            android:gravity="center_horizontal"
+            android:text="Please check your inbox for verification email"
+            android:textColor="#050505"
+            android:textSize="20sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </RelativeLayout>

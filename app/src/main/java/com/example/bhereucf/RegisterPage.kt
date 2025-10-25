@@ -15,6 +15,9 @@ class RegisterPage : ComponentActivity() {
     lateinit var usernameInput : EditText
     lateinit var passwordInput : EditText
     lateinit var nidInput : EditText
+
+    lateinit var emailInput : EditText
+
     lateinit var createAccountButton : Button
     lateinit var studentRadio : RadioButton
     lateinit var teacherRadio : RadioButton
@@ -41,14 +44,17 @@ class RegisterPage : ComponentActivity() {
         usernameInput = findViewById(R.id.username_input)
         passwordInput = findViewById(R.id.password_input)
         nidInput = findViewById(R.id.nid_input)
+        emailInput = findViewById(R.id.email_input)
         studentRadio = findViewById(R.id.radio_student)
         teacherRadio = findViewById(R.id.radio_teacher)
+
         createAccountButton = findViewById(R.id.create_btn)
         createAccountButton.setOnClickListener {
             val fullName = fullNameInput.text.toString()
             val username = usernameInput.text.toString()
             val password = passwordInput.text.toString()
             val nid = nidInput.text.toString()
+            val email = emailInput.text.toString()
             val isStudent = studentRadio.isChecked
             val isTeacher = teacherRadio.isChecked
             val userType = if (isStudent) "Student" else if (isTeacher) "Teacher" else ""
@@ -57,11 +63,12 @@ class RegisterPage : ComponentActivity() {
             Log.i("Test Account creation", "Username: $username")
             Log.i("Test Account creation", "Password: $password")
             Log.i("Test Account creation", "NID: $nid")
+            Log.i("Test Account creation", "Email: $email")
             Log.i("Test Account creation", "User Type: $userType")
 
-//            // Navigate to the next activity
-//            val intent = Intent(this, ClassChoiceActivity::class.java)
-//            startActivity(intent)
+            // Navigate to Email Verify
+            val intent = Intent(this, EmailVerify::class.java)
+            startActivity(intent)
         }
 
 
