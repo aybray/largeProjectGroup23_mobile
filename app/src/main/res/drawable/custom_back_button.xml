@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Blue circle background -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/blue"/>
+            <size android:width="50dp" android:height="50dp"/>
+        </shape>
+    </item>
+    <!-- White arrow icon -->
+    <item android:drawable="@drawable/ic_arrow_back_white"
+        android:gravity="center"/>
+</layer-list>
