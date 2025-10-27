@@ -40,6 +40,18 @@
             android:label="@string/app_name"
             android:theme="@style/Theme.BHereUCF">
         </activity>
+        <activity
+            android:name=".EnterCode"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.BHereUCF">
+        </activity>
+        <activity
+            android:name=".ResetPassword"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.BHereUCF">
+        </activity>
     </application>
 
 </manifest>

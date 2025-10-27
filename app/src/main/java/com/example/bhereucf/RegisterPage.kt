@@ -48,7 +48,7 @@ class RegisterPage : ComponentActivity() {
         studentRadio = findViewById(R.id.radio_student)
         teacherRadio = findViewById(R.id.radio_teacher)
 
-        createAccountButton = findViewById(R.id.create_btn)
+        createAccountButton = findViewById(R.id.send_btn)
         createAccountButton.setOnClickListener {
             val fullName = fullNameInput.text.toString()
             val username = usernameInput.text.toString()
