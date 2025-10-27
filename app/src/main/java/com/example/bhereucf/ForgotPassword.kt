@@ -3,24 +3,14 @@ package com.example.bhereucf
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
-import android.widget.ImageButton
-import android.widget.TextView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 //import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.bhereucf.ui.theme.BHereUCFTheme
 
 class ForgotPassword : ComponentActivity() {
 
     lateinit var backButton : Button
+    lateinit var sendButton : Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -32,6 +22,12 @@ class ForgotPassword : ComponentActivity() {
         backButton.setOnClickListener {
             finish() // This will go back to the previous activity
 
+        }
+
+        sendButton = findViewById(R.id.send_btn)
+        sendButton.setOnClickListener {
+            val intent = Intent(this, EnterCode::class.java);
+            startActivity(intent);
         }
     }
 }
