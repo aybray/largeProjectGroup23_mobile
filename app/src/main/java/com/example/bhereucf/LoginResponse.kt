@@ -1,4 +1,8 @@
 package com.example.bhereucf
 
-class LoginResponse {
-}
+data class LoginResponse(
+    val id: String,
+    val firstName: String,
+    val lastName: String,
+    val error: String
+)

@@ -1,4 +1,5 @@
 package com.example.bhereucf
 
-class RegisterResponse {
-}
+data class RegisterResponse(
+    val error: String
+)

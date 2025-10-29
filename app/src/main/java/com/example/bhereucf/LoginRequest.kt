@@ -1,4 +1,6 @@
 package com.example.bhereucf
 
-class LoginRequest {
-}
+data class LoginRequest(
+    val login: String,
+    val password: String
+)
