@@ -63,27 +63,26 @@
         android:padding="16dp">
 
         <EditText
-            android:id="@+id/full_name_input"
+            android:id="@+id/first_name_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:background="@drawable/rounded_corners"
             android:backgroundTint="@color/aqua_blue"
-            android:hint="Full Name"
+            android:hint="First Name"
             android:inputType="text"
             android:padding="18dp"
             android:textColor="@color/black"
             android:textColorHint="@color/black"
             android:textSize="20sp" />
-
         <EditText
-            android:id="@+id/username_input"
+            android:id="@+id/last_name_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:background="@drawable/rounded_corners"
             android:backgroundTint="@color/aqua_blue"
-            android:hint="Username"
+            android:hint="Last Name"
             android:inputType="text"
             android:padding="18dp"
             android:textColor="@color/black"

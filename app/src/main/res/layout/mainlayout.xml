@@ -75,7 +75,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <EditText
-            android:id="@+id/usernameInput"
+            android:id="@+id/passwordInput"
             android:layout_width="224dp"
             android:layout_height="56dp"
             android:layout_marginStart="44dp"
@@ -90,7 +90,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <EditText
-            android:id="@+id/passwordInput"
+            android:id="@+id/usernameInput"
             android:layout_width="224dp"
             android:layout_height="56dp"
             android:layout_marginStart="44dp"
