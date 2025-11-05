@@ -21,7 +21,8 @@ import com.example.bhereucf.ui.theme.BHereUCFTheme
 
 class ResetPassword : ComponentActivity() {
 
-    lateinit var backButton : Button
+    lateinit var backButton : ImageButton
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
 

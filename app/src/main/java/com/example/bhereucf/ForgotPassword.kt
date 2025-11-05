@@ -3,13 +3,14 @@ package com.example.bhereucf
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageButton
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 //import androidx.appcompat.app.AppCompatActivity
 
 class ForgotPassword : ComponentActivity() {
 
-    lateinit var backButton : Button
+    lateinit var backButton : ImageButton
     lateinit var sendButton : Button
 
     override fun onCreate(savedInstanceState: Bundle?) {

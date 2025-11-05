@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.RadioButton
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
@@ -22,7 +23,7 @@ class RegisterPage : ComponentActivity() {
     lateinit var studentRadio : RadioButton
     lateinit var teacherRadio : RadioButton
 
-    lateinit var backButton : Button
+    lateinit var backButton : ImageButton
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +49,7 @@ class RegisterPage : ComponentActivity() {
         studentRadio = findViewById(R.id.radio_student)
         teacherRadio = findViewById(R.id.radio_teacher)
 
-        createAccountButton = findViewById(R.id.send_btn)
+        createAccountButton = findViewById(R.id.create_btn)
         createAccountButton.setOnClickListener {
             val fullName = fullNameInput.text.toString()
             val username = usernameInput.text.toString()

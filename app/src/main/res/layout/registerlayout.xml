@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/registerPage"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/web_app_gray">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
-        android:layout_width="412dp"
-        android:layout_height="85dp"
-        android:background="#F9C404"
+        android:id="@+id/registerTopBar"
+        android:layout_width="match_parent"
+        android:layout_height="90dp"
+        android:background="@color/ucf_black"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <Button
+        <ImageButton
             android:id="@+id/back_btn"
-            android:layout_width="56dp"
-            android:layout_height="54dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="16dp"
             android:background="@drawable/custom_back_button"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:contentDescription="Back"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/editTextText"
-            app:layout_constraintHorizontal_bias="0.38"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.516" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/editTextText"
@@ -37,43 +37,51 @@
             android:singleLine="false"
             android:text="bHere @ UCF"
             android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-            android:textColor="#000000"
+            android:textColor="@color/ucf_bright_gold"
             android:textSize="36sp"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/spacer"
+            app:layout_constraintStart_toEndOf="@+id/back_btn"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Space
+            android:id="@+id/spacer"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.497"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.486" />
+            app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
-        android:layout_width="250dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/constraintLayout"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginStart="80dp"
-        android:layout_marginTop="47dp"
-        android:layout_marginEnd="80dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
         android:background="@drawable/rounded_corners"
-        android:backgroundTint="@color/light_green"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/registerTopBar"
+        app:layout_constraintWidth_max="480dp">
 
         <EditText
             android:id="@+id/full_name_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@drawable/rounded_corners"
-            android:backgroundTint="@color/aqua_blue"
+            android:background="@drawable/rounded_edit_fields"
             android:hint="Full Name"
             android:inputType="text"
             android:padding="18dp"
-            android:textColor="@color/black"
-            android:textColorHint="@color/black"
+            android:textColor="@color/white"
+            android:textColorHint="@color/edit_field_gray"
+            android:textAlignment="center"
             android:textSize="20sp" />
 
         <EditText
@@ -81,13 +89,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@drawable/rounded_corners"
-            android:backgroundTint="@color/aqua_blue"
+            android:background="@drawable/rounded_edit_fields"
             android:hint="Username"
             android:inputType="text"
             android:padding="18dp"
-            android:textColor="@color/black"
-            android:textColorHint="@color/black"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textColorHint="@color/edit_field_gray"
             android:textSize="20sp" />
 
         <EditText
@@ -95,13 +103,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@drawable/rounded_corners"
-            android:backgroundTint="@color/aqua_blue"
+            android:background="@drawable/rounded_edit_fields"
             android:hint="Password"
             android:inputType="textPassword"
             android:padding="18dp"
-            android:textColor="@color/black"
-            android:textColorHint="@color/black"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textColorHint="@color/edit_field_gray"
             android:textSize="20sp" />
 
         <EditText
@@ -109,13 +117,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@drawable/rounded_corners"
-            android:backgroundTint="@color/aqua_blue"
+            android:background="@drawable/rounded_edit_fields"
             android:hint="NID"
             android:inputType="text"
             android:padding="18dp"
-            android:textColor="@color/black"
-            android:textColorHint="@color/black"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textColorHint="@color/edit_field_gray"
             android:textSize="20sp" />
 
         <EditText
@@ -123,13 +131,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@drawable/rounded_corners"
-            android:backgroundTint="@color/aqua_blue"
+            android:background="@drawable/rounded_edit_fields"
             android:hint="Email"
             android:inputType="text"
             android:padding="18dp"
-            android:textColor="@color/black"
-            android:textColorHint="@color/black"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textColorHint="@color/edit_field_gray"
             android:textSize="20sp" />
 
         <RadioGroup
@@ -150,7 +158,7 @@
                 android:layoutDirection="rtl"
                 android:paddingStart="8dp"
                 android:text="S"
-                android:textColor="@color/black"
+                android:textColor="@color/white"
                 android:textSize="20sp" />
 
             <RadioButton
@@ -162,26 +170,24 @@
                 android:layoutDirection="rtl"
                 android:paddingStart="8dp"
                 android:text="T"
-                android:textColor="@color/black"
+                android:textColor="@color/white"
                 android:textSize="20sp" />
 
         </RadioGroup>
 
         <Button
-            android:id="@+id/send_btn"
-            android:layout_width="166dp"
-            android:layout_height="42dp"
-            android:layout_marginStart="7dp"
+            android:id="@+id/create_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:background="@drawable/rounded_corners"
-            android:backgroundTint="@color/blue"
+            android:backgroundTint="@color/ucf_bright_gold"
+            android:paddingVertical="12dp"
             android:text="Create"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:textColor="@color/white"
-            android:textSize="20sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:textSize="20sp" />
 
     </LinearLayout>
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

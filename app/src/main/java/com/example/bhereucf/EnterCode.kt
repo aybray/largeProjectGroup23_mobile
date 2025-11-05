@@ -21,7 +21,7 @@ import com.example.bhereucf.ui.theme.BHereUCFTheme
 
 class EnterCode : ComponentActivity() {
 
-    lateinit var backButton : Button
+    lateinit var backButton : ImageButton
 
     lateinit var confirmButton1 : Button
 

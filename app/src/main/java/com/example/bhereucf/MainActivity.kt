@@ -27,12 +27,14 @@ class MainActivity : ComponentActivity() {
 
         val forgotPWLink: TextView = findViewById(R.id.forgotPassword)
         forgotPWLink.setOnClickListener {
+            forgotPWLink.setTextColor(resources.getColor(R.color.ucf_metallic_gold, theme))
             val intent = Intent(this, ForgotPassword::class.java);
             startActivity(intent);
         }
 
         val registerLink: TextView = findViewById(R.id.registerHere)
         registerLink.setOnClickListener {
+            registerLink.setTextColor(resources.getColor(R.color.ucf_metallic_gold, theme))
             val intent = Intent(this, RegisterPage::class.java);
             startActivity(intent);
         }
