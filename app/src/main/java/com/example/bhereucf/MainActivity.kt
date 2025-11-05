@@ -2,17 +2,8 @@ package com.example.bhereucf
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 //import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.bhereucf.ui.theme.BHereUCFTheme
 import android.widget.TextView
 import android.content.Intent
 import android.graphics.Paint
@@ -27,13 +18,13 @@ class MainActivity : ComponentActivity() {
 
         val forgotPWLink: TextView = findViewById(R.id.forgotPassword)
         forgotPWLink.setOnClickListener {
-            val intent = Intent(this, ForgotPassword::class.java);
+            val intent = Intent(this, ForgotPW_EnterEmail::class.java);
             startActivity(intent);
         }
 
         val registerLink: TextView = findViewById(R.id.registerHere)
         registerLink.setOnClickListener {
-            val intent = Intent(this, RegisterPage::class.java);
+            val intent = Intent(this, Register_EnterInfo::class.java);
             startActivity(intent);
         }
 

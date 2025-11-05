@@ -9,7 +9,7 @@ import android.widget.RadioButton
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 
-class RegisterPage : ComponentActivity() {
+class Register_EnterInfo : ComponentActivity() {
 
     lateinit var fullNameInput : EditText
     lateinit var usernameInput : EditText
@@ -67,7 +67,7 @@ class RegisterPage : ComponentActivity() {
             Log.i("Test Account creation", "User Type: $userType")
 
             // Navigate to Email Verify
-            val intent = Intent(this, EmailVerify::class.java)
+            val intent = Intent(this, Register_EnterCode::class.java)
             startActivity(intent)
         }
 
