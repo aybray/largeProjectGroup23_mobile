@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".TeacherClassDetailActivity">
+
+    <TextView
+        android:id="@+id/take_attendance_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="100dp"
+        android:text="Take Attendance"
+        android:textSize="24sp" />
+
+    <Button
+        android:id="@+id/take_attendance_button"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_below="@+id/take_attendance_title"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:background="@drawable/rounded_corners" />
+
+    <TextView
+        android:id="@+id/advertising_status_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/take_attendance_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Status: Not Advertising"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/error_console_output"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/advertising_status_text"
+        android:layout_marginTop="20dp"
+        android:background="#EEEEEE"
+        android:padding="8dp"
+        android:textColor="#FF0000"
+        android:visibility="gone" />
+
+</RelativeLayout>
+
