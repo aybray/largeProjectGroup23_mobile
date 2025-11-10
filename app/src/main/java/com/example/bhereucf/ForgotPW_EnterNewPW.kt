@@ -11,6 +11,7 @@ class ForgotPW_EnterNewPW : ComponentActivity() {
 
     lateinit var backButton : ImageButton
 
+    lateinit var confirmButton : Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -22,6 +23,11 @@ class ForgotPW_EnterNewPW : ComponentActivity() {
         backButton.setOnClickListener {
             finish() // This will go back to the previous activity
 
+        }
+
+        confirmButton = findViewById(R.id.confirm_btn)
+        confirmButton.setOnClickListener {
+            // UPDATE PASSWORD API HERE
         }
     }
 }

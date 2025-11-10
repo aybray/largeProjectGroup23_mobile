@@ -1,5 +1,5 @@
 package com.example.bhereucf
 
-data class VerifyEmailCodeRequest(
+data class VerifyEmailCodeResponse(
     val error: String
 )

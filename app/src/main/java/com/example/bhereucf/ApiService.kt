@@ -35,7 +35,7 @@ interface ApiService {
     @POST("/api/sendEmailCode")
     fun sendEmailCode(@Body request: SendEmailCodeRequest): Call<SendEmailCodeResponse>
 
-    //@POST("/api/verifyEmailCode")
-    //fun verifyEmailCode(@Body request: VerifyEmailCodeRequest): Call<VerifyEmailCodeResponse>
+    @POST("/api/verifyEmailCode")
+    fun verifyEmailCode(@Body request: VerifyEmailCodeRequest): Call<VerifyEmailCodeResponse>
 }
 
