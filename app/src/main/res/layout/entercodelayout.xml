@@ -110,6 +110,14 @@
             android:textSize="20sp" />
 
         <TextView
+            android:id="@+id/warning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="Incorrect code.  Please try again."
+            android:textColor="#FF0000" />
+
+        <TextView
             android:id="@+id/resendEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

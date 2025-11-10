@@ -27,7 +27,6 @@ class MainActivity : ComponentActivity() {
         val passwordInput: EditText = findViewById(R.id.passwordInput)
         val loginButton: Button = findViewById(R.id.login_btn)
         val forgotPWLink: TextView = findViewById(R.id.forgotPassword)
-        val registerLink: TextView = findViewById(R.id.registerHere)
 
         loginButton.setOnClickListener {
             val username = usernameInput.text.toString().trim()

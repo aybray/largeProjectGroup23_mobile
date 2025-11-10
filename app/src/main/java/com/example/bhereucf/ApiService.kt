@@ -31,5 +31,11 @@ interface ApiService {
 
     @POST("/api/markmehere")
     fun markAttendance(@Body request: MarkAttendanceRequest): Call<MarkAttendanceResponse>
+
+    @POST("/api/sendEmailCode")
+    fun sendEmailCode(@Body request: SendEmailCodeRequest): Call<SendEmailCodeResponse>
+
+    //@POST("/api/verifyEmailCode")
+    //fun verifyEmailCode(@Body request: VerifyEmailCodeRequest): Call<VerifyEmailCodeResponse>
 }
 

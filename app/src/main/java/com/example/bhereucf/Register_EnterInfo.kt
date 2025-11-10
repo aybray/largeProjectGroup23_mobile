@@ -42,7 +42,7 @@ class Register_EnterInfo : ComponentActivity() {
 
 
         fullNameInput = findViewById(R.id.full_name_input)
-        usernameInput = findViewById(R.id.username_input)
+        usernameInput = findViewById(R.id.enter_email)
         passwordInput = findViewById(R.id.password_input)
         nidInput = findViewById(R.id.nid_input)
         emailInput = findViewById(R.id.email_input)
