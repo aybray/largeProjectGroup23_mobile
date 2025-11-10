@@ -39,31 +39,31 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".RegisterPage"
+            android:name=".Register_EnterInfo"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.BHereUCF">
         </activity>
         <activity
-            android:name=".ForgotPassword"
+            android:name=".ForgotPW_EnterEmail"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.BHereUCF">
         </activity>
         <activity
-            android:name=".EmailVerify"
+            android:name=".Register_EnterCode"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.BHereUCF">
         </activity>
         <activity
-            android:name=".EnterCode"
+            android:name=".ForgotPW_EnterCode"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.BHereUCF">
         </activity>
         <activity
-            android:name=".ResetPassword"
+            android:name=".ForgotPW_EnterNewPW"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.BHereUCF">
