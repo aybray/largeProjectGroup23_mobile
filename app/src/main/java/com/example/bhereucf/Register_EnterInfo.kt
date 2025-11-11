@@ -51,10 +51,10 @@ class Register_EnterInfo : ComponentActivity() {
         }
 
         fullNameInput = findViewById(R.id.full_name_input)
-        usernameInput = findViewById(R.id.enter_email)
+        emailInput = findViewById(R.id.enter_email)
         passwordInput = findViewById(R.id.password_input)
         nidInput = findViewById(R.id.nid_input)
-        emailInput = findViewById(R.id.email_input)
+        //emailInput = findViewById(R.id.email_input)
         studentRadio = findViewById(R.id.radio_student)
         teacherRadio = findViewById(R.id.radio_teacher)
 
@@ -62,24 +62,24 @@ class Register_EnterInfo : ComponentActivity() {
         createAccountButton.setOnClickListener {
             val fullName = fullNameInput.text.toString()
             val name = fullName.split(" ", limit = 2)
-            SharedRegisterData.firstName = name[0]
+            SharedRegisterData.firstName = name[0].trim()
             if (name.size > 1) {
-                SharedRegisterData.lastName = name[1]
+                SharedRegisterData.lastName = name[1].trim()
             }
-            val username = usernameInput.text.toString()
+            //val username = usernameInput.text.toString()
             val password = passwordInput.text.toString()
-            SharedRegisterData.password = password
+            SharedRegisterData.password = password.trim()
             val nid = nidInput.text.toString()
-            SharedRegisterData.id = nid
+            SharedRegisterData.id = nid.trim()
             val email = emailInput.text.toString()
-            SharedRegisterData.email = email
+            SharedRegisterData.email = email.trim()
             val isStudent = studentRadio.isChecked
             val isTeacher = teacherRadio.isChecked
             val userType = if (isStudent) "Student" else if (isTeacher) "Teacher" else ""
-            SharedRegisterData.role = userType
+            SharedRegisterData.role = userType.trim()
             // Use Logcat to see/confirm the text inputs
             Log.i("Test Account creation", "Full Name: $fullName")
-            Log.i("Test Account creation", "Username: $username")
+            //Log.i("Test Account creation", "Username: $username")
             Log.i("Test Account creation", "Password: $password")
             Log.i("Test Account creation", "NID: $nid")
             Log.i("Test Account creation", "Email: $email")
