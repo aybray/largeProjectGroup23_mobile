@@ -1,10 +1,8 @@
 package com.example.bhereucf
 
-import android.content.Intent
 import android.graphics.Paint
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -15,7 +13,6 @@ import androidx.activity.enableEdgeToEdge
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import kotlin.random.Random
 import kotlin.text.isNotEmpty
 
 //import androidx.appcompat.app.AppCompatActivity
@@ -37,7 +34,7 @@ class Register_EnterCode : ComponentActivity() {
         confirmButton1 = findViewById(R.id.confirm_btn1)
         confirmButton1.setOnClickListener {
 
-            codeInput = findViewById(R.id.code_input)
+            codeInput = findViewById(R.id.retypepw_input)
             val userCode = codeInput.text.toString()
 
             verifyCode(userCode, SharedRegisterData.email)

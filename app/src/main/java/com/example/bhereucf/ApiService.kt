@@ -37,5 +37,8 @@ interface ApiService {
 
     @POST("/api/verifyEmailCode")
     fun verifyEmailCode(@Body request: VerifyEmailCodeRequest): Call<VerifyEmailCodeResponse>
+
+    @POST("/api/changepassword")
+    fun updatePassword(@Body request: UpdatePasswordRequest): Call<UpdatePasswordResponse>
 }
 

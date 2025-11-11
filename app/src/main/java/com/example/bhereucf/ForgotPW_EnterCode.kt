@@ -25,6 +25,7 @@ class ForgotPW_EnterCode : ComponentActivity() {
     //lateinit var warning : TextView
     lateinit var codeInput : EditText
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -44,7 +45,7 @@ class ForgotPW_EnterCode : ComponentActivity() {
         confirmButton1.setOnClickListener {
 
             //val code = SharedData.code
-            codeInput = findViewById(R.id.code_input)
+            codeInput = findViewById(R.id.retypepw_input)
             val userCode = codeInput.text.toString()
 
             verifyCode(SharedForgotPWData.email, userCode);

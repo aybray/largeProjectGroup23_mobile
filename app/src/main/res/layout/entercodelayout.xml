@@ -82,7 +82,7 @@
             android:textSize="22sp" />
 
         <EditText
-            android:id="@+id/code_input"
+            android:id="@+id/retypepw_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
