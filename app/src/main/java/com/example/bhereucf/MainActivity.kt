@@ -2,6 +2,7 @@ package com.example.bhereucf
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import android.widget.TextView
 import android.content.Intent
@@ -26,7 +27,6 @@ class MainActivity : ComponentActivity() {
         val passwordInput: EditText = findViewById(R.id.passwordInput)
         val loginButton: Button = findViewById(R.id.login_btn)
         val forgotPWLink: TextView = findViewById(R.id.forgotPassword)
-        val registerLink: TextView = findViewById(R.id.registerHere)
 
         loginButton.setOnClickListener {
             val username = usernameInput.text.toString().trim()
@@ -49,13 +49,14 @@ class MainActivity : ComponentActivity() {
 
         forgotPWLink.setOnClickListener {
             forgotPWLink.setTextColor(resources.getColor(R.color.ucf_metallic_gold, theme))
-            val intent = Intent(this, ForgotPassword::class.java);
+            val intent = Intent(this, ForgotPW_EnterEmail::class.java);
             startActivity(intent);
         }
 
+        val registerLink: TextView = findViewById(R.id.registerHere)
         registerLink.setOnClickListener {
             registerLink.setTextColor(resources.getColor(R.color.ucf_metallic_gold, theme))
-            val intent = Intent(this, RegisterPage::class.java);
+            val intent = Intent(this, Register_EnterInfo::class.java);
             startActivity(intent);
         }
 
