@@ -5,31 +5,58 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface ApiService {
-    @POST("/api/login")
+    @POST("api/login")
     fun login(@Body request: LoginRequest): Call<LoginResponse>
 
-    @POST("/api/register")
+    @POST("api/register")
     fun register(@Body request: RegisterRequest): Call<RegisterResponse>
 
-    @POST("/api/fetchclasses")
+    @POST("api/fetchclasses")
     fun fetchClasses(@Body request: FetchClassesRequest): Call<FetchClassesResponse>
 
-    @POST("/api/preparebroadcast")
+    @POST("api/createclass")
+    fun createClass(@Body request: CreateClassRequest): Call<CreateClassResponse>
+
+    @POST("api/preparebroadcast")
     fun prepareBroadcast(@Body request: PrepareBroadcastRequest): Call<PrepareBroadcastResponse>
 
-    @POST("/api/newsecret")
+    @POST("api/newsecret")
     fun newSecret(@Body request: NewSecretRequest): Call<NewSecretResponse>
 
-    @POST("/api/endbroadcast")
+    @POST("api/endbroadcast")
     fun endBroadcast(@Body request: EndBroadcastRequest): Call<Unit>
 
-    @POST("/api/joinclass")
+    @POST("api/joinclass")
     fun joinClass(@Body request: JoinClassRequest): Call<JoinClassResponse>
 
-    @POST("/api/leaveclass")
+    @POST("api/leaveClass")
     fun leaveClass(@Body request: LeaveClassRequest): Call<LeaveClassResponse>
 
-    @POST("/api/markmehere")
+    @POST("api/markmehere")
     fun markAttendance(@Body request: MarkAttendanceRequest): Call<MarkAttendanceResponse>
+
+    @POST("api/sendEmailCode")
+    fun sendEmailCode(@Body request: SendEmailCodeRequest): Call<SendEmailCodeResponse>
+
+    @POST("api/verifyEmailCode")
+    fun verifyEmailCode(@Body request: VerifyEmailCodeRequest): Call<VerifyEmailCodeResponse>
+
+    @POST("api/changepassword")
+    fun updatePassword(@Body request: UpdatePasswordRequest): Call<UpdatePasswordResponse>
+
+    @POST("api/deleteClass")
+    fun deleteClass(@Body request: DeleteClassRequest): Call<DeleteClassResponse>
+
+    @POST("api/fetchteacherrecords")
+    fun fetchTeacherRecords(@Body request: FetchTeacherRecordsRequest): Call<FetchTeacherRecordsResponse>
+
+    @POST("api/fetchstudentrecords")
+    fun fetchStudentRecords(@Body request: FetchStudentRecordsRequest): Call<FetchStudentRecordsResponse>
+
+    @POST("api/removesecret")
+    fun removeSecret(@Body request: RemoveSecretRequest): Call<RemoveSecretResponse>
+
+    @POST("api/checkjwt")
+    fun checkJwt(@Body request: CheckJwtRequest): Call<CheckJwtResponse>
 }
 

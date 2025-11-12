@@ -11,6 +11,7 @@ import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -43,15 +44,47 @@ class StudentAttendanceActivity : ComponentActivity() {
     private var isScanning = false
     private var foundDevice = false
     private var attendanceMarked = false // Flag to prevent multiple marks
-    private var userId: String? = null
+    private var lastUsedBroadcastName: String? = null // Track the last broadcast name that was used for marking
+    private val markingLock = Any() // Lock for synchronizing attendance marking
+    
+    // SharedPreferences key for persisting lastUsedBroadcastName per class
+    private fun getLastUsedBroadcastKey(): String {
+        return "lastUsedBroadcast_${classId ?: "unknown"}"
+    }
+    
+    private fun getSharedPreferences(): SharedPreferences {
+        return getSharedPreferences("StudentAttendancePrefs", Context.MODE_PRIVATE)
+    }
+    
+    private fun loadLastUsedBroadcastName() {
+        val prefs = getSharedPreferences()
+        val key = getLastUsedBroadcastKey()
+        lastUsedBroadcastName = prefs.getString(key, null)
+        Log.d("StudentAttendance", "📂 Loaded lastUsedBroadcastName from SharedPreferences: '$lastUsedBroadcastName' (key: '$key')")
+    }
+    
+    private fun saveLastUsedBroadcastName(broadcastName: String) {
+        val prefs = getSharedPreferences()
+        val key = getLastUsedBroadcastKey()
+        prefs.edit().putString(key, broadcastName).apply()
+        Log.d("StudentAttendance", "💾 Saved lastUsedBroadcastName to SharedPreferences: '$broadcastName' (key: '$key')")
+    }
+    
+    private fun clearLastUsedBroadcastName() {
+        val prefs = getSharedPreferences()
+        val key = getLastUsedBroadcastKey()
+        prefs.edit().remove(key).apply()
+        Log.d("StudentAttendance", "🗑️ Cleared lastUsedBroadcastName from SharedPreferences (key: '$key')")
+    }
     private var classId: String? = null
     private var classCode: String? = null
     private var section: String? = null
     private var className: String? = null
     private var expectedDeviceName: String? = null
-    private var broadcastSecret: String? = null
+    private var currentBroadcastName: String? = null // Current detected broadcast name
 
     private lateinit var classInfoText: TextView
+    private lateinit var markHereButton: Button
     private lateinit var viewHistoryButton: Button
     private lateinit var leaveClassButton: Button
     private lateinit var statusText: TextView
@@ -84,27 +117,73 @@ class StudentAttendanceActivity : ComponentActivity() {
             
             // Match broadcast format: {ClassCode}{Section}-{SecretHash}
             // Format: ClassCode + Section + "-" + SecretHash
-            if (deviceName != null && classCode != null && section != null && !attendanceMarked) {
+            if (deviceName != null && classCode != null && section != null) {
                 val expectedPrefix = "$classCode$section-"
                 Log.d("BLEScanner", "Checking device: '$deviceName' against prefix: '$expectedPrefix'")
                 
                 if (deviceName.startsWith(expectedPrefix, ignoreCase = true)) {
-                    // Extract the secret from the broadcast name
-                    // Format is: {ClassCode}{Section}-{SecretHash}
-                    // substringAfter gets everything after the FIRST occurrence of "-"
-                    val secret = deviceName.substringAfter("-", "")
+                    // Store the full broadcast name (e.g., "COP4331001-a1b2c3d4")
+                    val trimmedBroadcastName = deviceName.trim()
                     
-                    if (secret.isNotEmpty()) {
-                        foundDevice = true
-                        broadcastSecret = secret
-                        Log.d("BLEScanner", "Matched broadcast: $deviceName")
-                        Log.d("BLEScanner", "Extracted secret: '$secret' (length: ${secret.length})")
-                        Log.d("BLEScanner", "ClassCode: '$classCode', Section: '$section', ClassId: '$classId', UserId: '$userId'")
-                        
-                        // Automatically mark attendance
-                        markPresentAutomatically(secret)
+                    Log.d("BLEScanner", "=== BROADCAST DETECTED ===")
+                    Log.d("BLEScanner", "📡 Detected broadcast name: '$trimmedBroadcastName'")
+                    Log.d("BLEScanner", "📋 Last used broadcast name: '$lastUsedBroadcastName'")
+                    Log.d("BLEScanner", "📋 Current broadcast name (stored): '$currentBroadcastName'")
+                    Log.d("BLEScanner", "📋 Attendance marked flag: $attendanceMarked")
+                    Log.d("BLEScanner", "🔍 Comparison: lastUsed='$lastUsedBroadcastName' vs detected='$trimmedBroadcastName'")
+                    Log.d("BLEScanner", "🔍 Are they equal? ${lastUsedBroadcastName == trimmedBroadcastName}")
+                    
+                    if (trimmedBroadcastName.isNotEmpty()) {
+                        // Store the current broadcast name and enable the "Mark Here" button
+                        synchronized(markingLock) {
+                            // Check if this broadcast name has already been used
+                            if (lastUsedBroadcastName != null && lastUsedBroadcastName == trimmedBroadcastName) {
+                                Log.d("BLEScanner", "❌ DUPLICATE: Broadcast name '$trimmedBroadcastName' already used for this ping")
+                                Log.d("BLEScanner", "   Last used: '$lastUsedBroadcastName'")
+                                Log.d("BLEScanner", "   Current: '$trimmedBroadcastName'")
+                                // Update UI to show they've already been marked
+                                runOnUiThread {
+                                    statusText.text = "You've already been marked present for this ping."
+                                    statusText.setTextColor(ContextCompat.getColor(this@StudentAttendanceActivity, android.R.color.holo_orange_dark))
+                                    markHereButton.isEnabled = false
+                                }
+                                return@onScanResult
+                            }
+                            
+                            // This is a NEW broadcast name (different from the last used one)
+                            // Reset attendanceMarked to allow marking for this new ping
+                            attendanceMarked = false
+                            
+                            // Store the current broadcast name
+                            currentBroadcastName = trimmedBroadcastName
+                            foundDevice = true
+                            
+                            Log.d("BLEScanner", "✅ NEW BROADCAST: '$trimmedBroadcastName'")
+                            Log.d("BLEScanner", "   Last used: '$lastUsedBroadcastName'")
+                            Log.d("BLEScanner", "   Current: '$trimmedBroadcastName'")
+                            Log.d("BLEScanner", "   ClassCode: '$classCode', Section: '$section'")
+                            Log.d("BLEScanner", "   Resetting attendanceMarked to allow marking")
+                            
+                            // Enable the "Mark Here" button only if this is a new broadcast
+                            runOnUiThread {
+                                // Double-check: make sure we're not enabling for an already-used broadcast
+                                synchronized(markingLock) {
+                                    if (lastUsedBroadcastName != null && lastUsedBroadcastName == trimmedBroadcastName) {
+                                        Log.d("BLEScanner", "❌ Double-check failed: Broadcast already used - keeping button disabled")
+                                        statusText.text = "You've already been marked present for this ping."
+                                        statusText.setTextColor(ContextCompat.getColor(this@StudentAttendanceActivity, android.R.color.holo_orange_dark))
+                                        markHereButton.isEnabled = false
+                                    } else {
+                                        Log.d("BLEScanner", "✅ Enabling 'Mark Here' button for broadcast: '$trimmedBroadcastName'")
+                                        statusText.text = "Teacher broadcast found! Press 'Mark Here' to mark attendance."
+                                        statusText.setTextColor(ContextCompat.getColor(this@StudentAttendanceActivity, android.R.color.holo_green_dark))
+                                        markHereButton.isEnabled = true
+                                    }
+                                }
+                            }
+                        }
                     } else {
-                        Log.w("BLEScanner", "Found matching prefix but secret extraction resulted in empty string")
+                        Log.w("BLEScanner", "Found matching prefix but broadcast name is empty")
                     }
                 }
             }
@@ -129,28 +208,31 @@ class StudentAttendanceActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.student_attendance_layout)
 
-        // Get data from intent - trim userId to ensure consistency with backend
-        userId = intent.getStringExtra("USER_ID")?.trim()
+        // Get data from intent - userId is now in JWT token, not passed via Intent
         classId = intent.getStringExtra("CLASS_ID")?.trim()
         classCode = intent.getStringExtra("CLASS_CODE")?.trim()
         section = intent.getStringExtra("SECTION")?.trim()
         className = intent.getStringExtra("CLASS_NAME")?.trim()
         expectedDeviceName = intent.getStringExtra("DEVICE_NAME")?.trim()
         
+        // Load persisted lastUsedBroadcastName from SharedPreferences
+        loadLastUsedBroadcastName()
+        
         // Log received values for debugging
-        Log.d("StudentAttendance", "=== RECEIVED FROM INTENT ===")
-        Log.d("StudentAttendance", "userId: '$userId'")
+        Log.d("StudentAttendance", "=== ACTIVITY CREATED (STUDENT CLICKED CLASS) ===")
+        // userId is now in JWT token - not passed via Intent
         Log.d("StudentAttendance", "classId: '$classId'")
         Log.d("StudentAttendance", "classCode: '$classCode', section: '$section'")
+        Log.d("StudentAttendance", "Initial state:")
+        Log.d("StudentAttendance", "  - currentBroadcastName: '$currentBroadcastName'")
+        Log.d("StudentAttendance", "  - lastUsedBroadcastName: '$lastUsedBroadcastName' (loaded from SharedPreferences)")
+        Log.d("StudentAttendance", "  - attendanceMarked: $attendanceMarked")
+        Log.d("StudentAttendance", "Expected broadcast format: '${classCode}${section}-{SECRET}'")
         Log.d("StudentAttendance", "============================")
 
         // Initialize views
-        val backButton: ImageView = findViewById(R.id.back_button)
-        backButton.setOnClickListener {
-            finish()
-        }
-
         classInfoText = findViewById(R.id.class_info_text)
+        markHereButton = findViewById(R.id.mark_here_button)
         viewHistoryButton = findViewById(R.id.view_history_button)
         leaveClassButton = findViewById(R.id.leave_class_button)
         statusText = findViewById(R.id.status_text)
@@ -164,10 +246,87 @@ class StudentAttendanceActivity : ComponentActivity() {
         statusText.text = "Scanning for teacher broadcast..."
         statusText.setTextColor(ContextCompat.getColor(this, R.color.white))
 
+        // Set up "Mark Here" button click listener
+        markHereButton.setOnClickListener {
+            Log.d("MarkHere", "═══════════════════════════════════════════════════")
+            Log.d("MarkHere", "🔘 MARK HERE BUTTON PRESSED")
+            Log.d("MarkHere", "═══════════════════════════════════════════════════")
+            
+            val currentBroadcast = currentBroadcastName
+            Log.d("MarkHere", "📡 Current broadcast name from variable: '$currentBroadcast'")
+            
+            if (currentBroadcast == null) {
+                Toast.makeText(this, "No broadcast detected. Please wait for teacher broadcast.", Toast.LENGTH_SHORT).show()
+                Log.w("MarkHere", "❌ Button pressed but currentBroadcastName is null")
+                return@setOnClickListener
+            }
+            
+            val trimmedBroadcastName = currentBroadcast.trim()
+            
+            Log.d("MarkHere", "═══════════════════════════════════════════════════")
+            Log.d("MarkHere", "🔍 CHECKING BROADCAST NAME FOR DUPLICATES")
+            Log.d("MarkHere", "═══════════════════════════════════════════════════")
+            Log.d("MarkHere", "📋 Current broadcast name: '$trimmedBroadcastName'")
+            Log.d("MarkHere", "📋 Last used broadcast name: '$lastUsedBroadcastName'")
+            Log.d("MarkHere", "📋 Attendance marked flag: $attendanceMarked")
+            Log.d("MarkHere", "🔍 Comparison: lastUsed='$lastUsedBroadcastName' vs current='$trimmedBroadcastName'")
+            Log.d("MarkHere", "🔍 Are they equal? ${lastUsedBroadcastName == trimmedBroadcastName}")
+            
+            // Check if this broadcast name has already been used
+            synchronized(markingLock) {
+                // CRITICAL CHECK: Compare current broadcast to last used broadcast
+                // If they match, this is a duplicate and should be blocked
+                if (lastUsedBroadcastName != null && lastUsedBroadcastName == trimmedBroadcastName) {
+                    Log.d("MarkHere", "═══════════════════════════════════════════════════")
+                    Log.d("MarkHere", "❌ DUPLICATE DETECTED - BLOCKING MARK")
+                    Log.d("MarkHere", "═══════════════════════════════════════════════════")
+                    Log.d("MarkHere", "   Last used: '$lastUsedBroadcastName'")
+                    Log.d("MarkHere", "   Current: '$trimmedBroadcastName'")
+                    Log.d("MarkHere", "   Match: ${lastUsedBroadcastName == trimmedBroadcastName}")
+                    Log.d("MarkHere", "   ⚠️ Student already marked for this ping!")
+                    Toast.makeText(this, "You've already been marked present for this ping.", Toast.LENGTH_LONG).show()
+                    statusText.text = "You've already been marked present for this ping."
+                    statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
+                    markHereButton.isEnabled = false
+                    return@setOnClickListener
+                }
+                
+                Log.d("MarkHere", "═══════════════════════════════════════════════════")
+                Log.d("MarkHere", "✅ Broadcast name is NEW - ALLOWING MARK")
+                Log.d("MarkHere", "═══════════════════════════════════════════════════")
+                Log.d("MarkHere", "   Last used: '$lastUsedBroadcastName'")
+                Log.d("MarkHere", "   Current: '$trimmedBroadcastName'")
+                Log.d("MarkHere", "   Match: ${lastUsedBroadcastName == trimmedBroadcastName}")
+                
+                // Mark this broadcast name as used and set flag BEFORE making API call
+                // This prevents race conditions if the button is pressed multiple times quickly
+                val oldLastUsed = lastUsedBroadcastName
+                lastUsedBroadcastName = trimmedBroadcastName
+                attendanceMarked = true
+                // Persist to SharedPreferences so it survives activity recreation
+                saveLastUsedBroadcastName(trimmedBroadcastName)
+                Log.d("MarkHere", "✅ Updated state:")
+                Log.d("MarkHere", "   Old lastUsedBroadcastName: '$oldLastUsed'")
+                Log.d("MarkHere", "   New lastUsedBroadcastName: '$lastUsedBroadcastName'")
+                Log.d("MarkHere", "   attendanceMarked: $attendanceMarked")
+                Log.d("MarkHere", "   💾 Persisted to SharedPreferences")
+            }
+            
+            // Extract secret from broadcast name for API call
+            // Format: {ClassCode}{Section}-{SecretHash}
+            val secret = trimmedBroadcastName.substringAfter("-", "").trim()
+            Log.d("MarkHere", "🔑 Extracted secret from '$trimmedBroadcastName': '$secret'")
+            Log.d("MarkHere", "📤 Proceeding to mark attendance with secret...")
+            
+            // Mark attendance
+            markPresentAutomatically(secret, trimmedBroadcastName)
+        }
+
         viewHistoryButton.setOnClickListener {
             // Navigate to history page
             val intent = Intent(this, StudentAttendanceHistoryActivity::class.java).apply {
-                putExtra("USER_ID", userId)
+                // userId is now in JWT token - not passed via Intent
+                putExtra("CLASS_ID", classId)
                 putExtra("CLASS_CODE", classCode)
                 putExtra("SECTION", section)
                 putExtra("CLASS_NAME", className)
@@ -226,7 +385,15 @@ class StudentAttendanceActivity : ComponentActivity() {
         }
 
         foundDevice = false
+        currentBroadcastName = null // Reset current broadcast name when starting new scan
         isScanning = true
+        markHereButton.isEnabled = false // Disable button until broadcast is found
+        
+        Log.d("BLEScanner", "=== STARTING SCAN ===")
+        Log.d("BLEScanner", "Current broadcast name: '$currentBroadcastName'")
+        Log.d("BLEScanner", "Last used broadcast name: '$lastUsedBroadcastName'")
+        Log.d("BLEScanner", "Looking for broadcast matching: '${classCode}${section}-*'")
+        
         statusText.text = "Scanning for teacher broadcast..."
         statusText.setTextColor(ContextCompat.getColor(this, R.color.white))
 
@@ -245,6 +412,7 @@ class StudentAttendanceActivity : ComponentActivity() {
                         if (!foundDevice && !attendanceMarked) {
                             statusText.text = "Teacher broadcast not found.\nPlease wait and scan again."
                             statusText.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
+                            markHereButton.isEnabled = false
                             // Restart scanning after a delay
                             scanHandler.postDelayed({
                                 if (!attendanceMarked) {
@@ -270,50 +438,80 @@ class StudentAttendanceActivity : ComponentActivity() {
             Log.d("BLEScanner", "Stopped scanning")
         }
 
-    private fun markPresentAutomatically(secret: String) {
-        val currentUserId = userId
+    private fun markPresentAutomatically(secret: String, broadcastName: String) {
         val currentClassId = classId
 
-        if (currentUserId == null || currentClassId == null) {
-            Log.e("MarkAttendance", "Missing info - userId: $currentUserId, classId: $currentClassId")
+        if (currentClassId == null) {
+            Log.e("MarkAttendance", "Missing info - classId: $currentClassId")
+            // Reset flags if we can't proceed
+            synchronized(markingLock) {
+                attendanceMarked = false
+                if (lastUsedBroadcastName == broadcastName) {
+                    lastUsedBroadcastName = null
+                    clearLastUsedBroadcastName()
+                }
+            }
             return
         }
 
-        // Prevent multiple marks
-        if (attendanceMarked) {
-            Log.d("MarkAttendance", "Attendance already marked, skipping")
+        // Extract userId from JWT token only
+        val currentUserId = JwtTokenManager.getUserIdFromToken(this)
+        if (currentUserId == null) {
+            Log.e("MarkAttendance", "Failed to extract userId from JWT token")
+            // Reset flags if we can't proceed
+            synchronized(markingLock) {
+                attendanceMarked = false
+                if (lastUsedBroadcastName == broadcastName) {
+                    lastUsedBroadcastName = null
+                    clearLastUsedBroadcastName()
+                }
+            }
             return
         }
 
-        attendanceMarked = true
+        // Broadcast name is already stored in lastUsedBroadcastName in button click handler
+        // The flag is already set, so we can proceed with the API call
+        val trimmedSecret = secret.trim()
+        
         stopScanning()
         
-        // Update status
-        statusText.text = "Teacher broadcast found!\nMarking attendance..."
+        // Disable the button and update status
+        markHereButton.isEnabled = false
+        statusText.text = "Marking attendance..."
         statusText.setTextColor(ContextCompat.getColor(this, R.color.white))
 
         // Trim and validate before sending
         val trimmedUserId = currentUserId.trim()
-        val trimmedClassId = currentClassId.trim()
-        val trimmedSecret = secret.trim()
+        val trimmedClassId = currentClassId!!.trim()
+        // trimmedSecret already declared above
 
         // Log the values being sent for debugging (with exact values)
         Log.d("MarkAttendance", "=== MARK ATTENDANCE REQUEST ===")
-        Log.d("MarkAttendance", "userId (before trim): '$currentUserId' (length: ${currentUserId?.length})")
-        Log.d("MarkAttendance", "userId (after trim): '$trimmedUserId' (length: ${trimmedUserId.length})")
         Log.d("MarkAttendance", "objectId (before trim): '$currentClassId' (length: ${currentClassId?.length})")
         Log.d("MarkAttendance", "objectId (after trim): '$trimmedClassId' (length: ${trimmedClassId.length})")
         Log.d("MarkAttendance", "secret: '$trimmedSecret' (length: ${trimmedSecret.length})")
         Log.d("MarkAttendance", "classCode: '$classCode', section: '$section'")
         Log.d("MarkAttendance", "===============================")
 
+        // Extract userId from JWT token only
+        val actualUserId = JwtTokenManager.getUserIdFromToken(this)
+        if (actualUserId == null) {
+            Toast.makeText(this, "Error: Unable to get user ID from token", Toast.LENGTH_LONG).show()
+            Log.e("MarkAttendance", "Failed to extract userId from JWT token")
+            attendanceMarked = false
+            markHereButton.isEnabled = currentBroadcastName != null
+            return
+        }
+
         val request = MarkAttendanceRequest(
-            userId = trimmedUserId,
+            userId = actualUserId,
             objectId = trimmedClassId,
             secret = trimmedSecret
         )
 
         val call = RetrofitClient.apiService.markAttendance(request)
+        // Store broadcast name in outer scope for use in callbacks
+        val finalBroadcastName = broadcastName
         call.enqueue(object : Callback<MarkAttendanceResponse> {
             override fun onResponse(call: Call<MarkAttendanceResponse>, response: Response<MarkAttendanceResponse>) {
 
@@ -327,9 +525,15 @@ class StudentAttendanceActivity : ComponentActivity() {
                     val isSuccess = markResponse.success || markResponse.error.isEmpty()
                     
                     if (isSuccess) {
+                        // Mark attendance as successful - NEVER reset flags or remove broadcast name
+                        // This ensures the broadcast name can never be used again, even if activity is recreated
+                        Log.d("MarkAttendance", "Attendance marked successfully - broadcast name '$finalBroadcastName' will remain in used set")
                         statusText.text = "Attendance marked successfully!"
                         statusText.setTextColor(ContextCompat.getColor(this@StudentAttendanceActivity, android.R.color.holo_green_dark))
                         Toast.makeText(this@StudentAttendanceActivity, "Attendance marked successfully!", Toast.LENGTH_SHORT).show()
+                        
+                        // Ensure scanning is stopped and won't restart
+                        stopScanning()
                         
                         // Show confirmation screen after a short delay
                         scanHandler.postDelayed({
@@ -362,12 +566,41 @@ class StudentAttendanceActivity : ComponentActivity() {
                         Log.e("MarkAttendance", "Failed to mark attendance: $errorMessage")
                         Log.e("MarkAttendance", "Backend error: $backendError")
                         Toast.makeText(this@StudentAttendanceActivity, finalErrorMessage, Toast.LENGTH_LONG).show()
-                        // Reset flag so they can try again
-                        attendanceMarked = false
-                        // Don't restart scanning if not enrolled - they need to join the class
-                        if (!backendError.contains("not enrolled", ignoreCase = true) && 
-                            !backendError.contains("NOT_IN_CLASS", ignoreCase = true)) {
+                        
+                        // Check if error indicates attendance was already marked
+                        val isAlreadyMarkedError = backendError.contains("already", ignoreCase = true) ||
+                            backendError.contains("duplicate", ignoreCase = true)
+                        
+                        // Only reset flags if it's a retryable error AND not already marked
+                        // If backend says "already marked", we should keep the secret in used set
+                        val isRetryableError = !backendError.contains("not enrolled", ignoreCase = true) && 
+                            !backendError.contains("NOT_IN_CLASS", ignoreCase = true) &&
+                            !isAlreadyMarkedError
+                        
+                        if (isRetryableError) {
+                                // Reset flag and remove broadcast name from used set so they can try again
+                                synchronized(markingLock) {
+                                    attendanceMarked = false
+                                    if (lastUsedBroadcastName == finalBroadcastName) {
+                                        lastUsedBroadcastName = null
+                                        clearLastUsedBroadcastName()
+                                    }
+                                }
+                                Log.d("MarkAttendance", "Retryable error - reset flags and removed broadcast name '$finalBroadcastName' from used set")
+                            // Re-enable button if broadcast is still available
+                            if (currentBroadcastName == finalBroadcastName) {
+                                markHereButton.isEnabled = true
+                            }
+                            // Restart scanning for retryable errors
                             requestPermissionsAndStartScanning()
+                        } else {
+                            // For non-retryable errors (not enrolled, already marked), keep the flags set
+                            // to prevent further attempts with the same broadcast name
+                            if (isAlreadyMarkedError) {
+                                Log.d("MarkAttendance", "Already marked error - keeping broadcast name '$finalBroadcastName' in used set permanently")
+                            } else {
+                                Log.d("MarkAttendance", "Non-retryable error - keeping broadcast name '$finalBroadcastName' in used set")
+                            }
                         }
                     }
                 } else {
@@ -415,12 +648,43 @@ class StudentAttendanceActivity : ComponentActivity() {
                     statusText.text = "Error: $finalErrorMessage"
                     statusText.setTextColor(ContextCompat.getColor(this@StudentAttendanceActivity, android.R.color.holo_red_dark))
                     Toast.makeText(this@StudentAttendanceActivity, finalErrorMessage, Toast.LENGTH_LONG).show()
-                    // Reset flag so they can try again
-                    attendanceMarked = false
-                    // Don't restart scanning if not enrolled - they need to join the class
-                    if (!errorMessage.contains("not enrolled", ignoreCase = true) && 
-                        !errorMessage.contains("NOT_IN_CLASS", ignoreCase = true)) {
-                        requestPermissionsAndStartScanning()
+                    
+                    // Check if error indicates attendance was already marked
+                    val isAlreadyMarkedError = errorMessage.contains("already", ignoreCase = true) ||
+                        errorMessage.contains("duplicate", ignoreCase = true)
+                    
+                    // Only reset flags if it's a retryable error AND not already marked
+                    val isRetryableError = !errorMessage.contains("not enrolled", ignoreCase = true) && 
+                        !errorMessage.contains("NOT_IN_CLASS", ignoreCase = true) &&
+                        !isAlreadyMarkedError
+                    
+                    if (isRetryableError) {
+                        // Reset flag and remove broadcast name from used set so they can try again
+                        synchronized(markingLock) {
+                            attendanceMarked = false
+                            if (lastUsedBroadcastName == finalBroadcastName) {
+                                lastUsedBroadcastName = null
+                            }
+                            Log.d("MarkAttendance", "Retryable error - reset flags and removed broadcast name '$finalBroadcastName' from used set")
+                        }
+                        // Re-enable button if broadcast is still available
+                        if (currentBroadcastName == finalBroadcastName) {
+                            markHereButton.isEnabled = true
+                        }
+                        // Restart scanning for retryable errors
+                        scanHandler.postDelayed({
+                            if (!attendanceMarked) {
+                                requestPermissionsAndStartScanning()
+                            }
+                        }, 2000)
+                    } else {
+                        // For non-retryable errors (not enrolled, already marked), keep the flags set
+                        // to prevent further attempts with the same broadcast name
+                        if (isAlreadyMarkedError) {
+                            Log.d("MarkAttendance", "Already marked error - keeping broadcast name '$finalBroadcastName' in used set permanently")
+                        } else {
+                            Log.d("MarkAttendance", "Non-retryable error - keeping broadcast name '$finalBroadcastName' in used set")
+                        }
                     }
                 }
             }
@@ -430,35 +694,53 @@ class StudentAttendanceActivity : ComponentActivity() {
                 statusText.setTextColor(ContextCompat.getColor(this@StudentAttendanceActivity, android.R.color.holo_red_dark))
                 Toast.makeText(this@StudentAttendanceActivity, "Network error: ${t.message}", Toast.LENGTH_SHORT).show()
                 Log.e("MarkAttendance", "Error marking attendance", t)
-                // Reset flag so they can try again
-                attendanceMarked = false
-                // Restart scanning
-                requestPermissionsAndStartScanning()
+                
+                // For network errors, we can retry, but we need to be careful
+                // Only remove secret if we're sure the request never reached the server
+                // However, since we can't know for sure, we'll keep the secret in used set
+                // to prevent duplicate marks if the request actually succeeded
+                // The backend should handle duplicate prevention anyway
+                synchronized(markingLock) {
+                    // Keep broadcast name in used set to prevent potential duplicates
+                    // If backend received the request, it will prevent duplicate
+                    // If backend didn't receive it, student can try again with a new broadcast name (new ping)
+                    Log.d("MarkAttendance", "Network error - keeping broadcast name '$finalBroadcastName' in used set to prevent duplicates")
+                    // Don't reset attendanceMarked or remove broadcast name - let backend handle duplicates
+                    // Student will need to wait for next ping (new broadcast name) to try again
+                }
             }
         })
     }
 
     private fun leaveClass() {
-        val currentUserId = userId
-        val currentClassCode = classCode
-        val currentSection = section
+        val currentClassId = classId
 
-        if (currentUserId == null || currentClassCode == null || currentSection == null) {
+        if (currentClassId == null) {
             Toast.makeText(this, "Missing class information", Toast.LENGTH_SHORT).show()
-            Log.e("LeaveClass", "Missing info - userId: $currentUserId, classCode: $currentClassCode, section: $currentSection")
+            Log.e("LeaveClass", "Missing info - classId: $currentClassId")
             return
         }
 
         // Log the values being sent for debugging
-        Log.d("LeaveClass", "Attempting to leave class - userId: $currentUserId, classCode: '$currentClassCode', section: '$currentSection'")
+        // userId is now in JWT token - not passed via Intent
+        Log.d("LeaveClass", "Attempting to leave class - classId: '$currentClassId'")
 
         leaveClassButton.isEnabled = false
         leaveClassButton.text = "Leaving..."
 
+        // Extract userId from JWT token only
+        val actualUserId = JwtTokenManager.getUserIdFromToken(this)
+        if (actualUserId == null) {
+            Toast.makeText(this, "Error: Unable to get user ID from token", Toast.LENGTH_LONG).show()
+            Log.e("LeaveClass", "Failed to extract userId from JWT token")
+            leaveClassButton.isEnabled = true
+            leaveClassButton.text = "Leave Class"
+            return
+        }
+
         val request = LeaveClassRequest(
-            userId = currentUserId,
-            classCode = currentClassCode,
-            section = currentSection
+            userId = actualUserId,
+            classId = currentClassId.trim()
         )
 
         val call = RetrofitClient.apiService.leaveClass(request)
@@ -477,6 +759,7 @@ class StudentAttendanceActivity : ComponentActivity() {
                     val isSuccess = leaveResponse.success || leaveResponse.error.isEmpty()
                     
                     if (isSuccess) {
+                        Log.d("LeaveClass", "Successfully left class - setting RESULT_OK and finishing")
                         Toast.makeText(this@StudentAttendanceActivity, "Successfully left class", Toast.LENGTH_SHORT).show()
                         // Set result to indicate class was left, so parent activity can refresh
                         setResult(RESULT_OK)

@@ -16,13 +16,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
-            android:id="@+id/back_btn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_marginStart="16dp"
-            android:background="@drawable/custom_back_button"
-            android:contentDescription="Back"
+            android:contentDescription="App logo"
+            android:src="@drawable/logo"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -41,13 +41,13 @@
             android:textSize="36sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/spacer"
-            app:layout_constraintStart_toEndOf="@+id/back_btn"
+            app:layout_constraintStart_toEndOf="@+id/logo"
             app:layout_constraintTop_toTopOf="parent" />
 
         <Space
             android:id="@+id/spacer"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_marginEnd="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -76,22 +76,22 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:background="@drawable/rounded_edit_fields"
-            android:hint="Full Name"
+            android:hint="Full Name (First Last)"
             android:inputType="text"
             android:padding="18dp"
+            android:textAlignment="center"
             android:textColor="@color/white"
             android:textColorHint="@color/edit_field_gray"
-            android:textAlignment="center"
             android:textSize="20sp" />
 
         <EditText
-            android:id="@+id/username_input"
+            android:id="@+id/enter_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:background="@drawable/rounded_edit_fields"
-            android:hint="Username"
-            android:inputType="text"
+            android:hint="Email"
+            android:inputType="textEmailAddress"
             android:padding="18dp"
             android:textAlignment="center"
             android:textColor="@color/white"
@@ -126,20 +126,6 @@
             android:textColorHint="@color/edit_field_gray"
             android:textSize="20sp" />
 
-        <EditText
-            android:id="@+id/email_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/rounded_edit_fields"
-            android:hint="Email"
-            android:inputType="text"
-            android:padding="18dp"
-            android:textAlignment="center"
-            android:textColor="@color/white"
-            android:textColorHint="@color/edit_field_gray"
-            android:textSize="20sp" />
-
         <RadioGroup
             android:id="@+id/radio_group"
             android:layout_width="wrap_content"
@@ -157,9 +143,9 @@
                 android:button="@drawable/radio_button_selector"
                 android:layoutDirection="rtl"
                 android:paddingStart="8dp"
-                android:text="S"
+                android:text="Student"
                 android:textColor="@color/white"
-                android:textSize="20sp" />
+                android:textSize="18sp" />
 
             <RadioButton
                 android:id="@+id/radio_teacher"
@@ -169,9 +155,9 @@
                 android:button="@drawable/radio_button_selector"
                 android:layoutDirection="rtl"
                 android:paddingStart="8dp"
-                android:text="T"
+                android:text="Teacher"
                 android:textColor="@color/white"
-                android:textSize="20sp" />
+                android:textSize="18sp" />
 
         </RadioGroup>
 

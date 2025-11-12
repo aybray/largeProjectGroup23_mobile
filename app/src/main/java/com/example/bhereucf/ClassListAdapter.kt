@@ -5,9 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.RecyclerView
 
-class ClassListAdapter(private val classList: List<Class>, private val userId: String?) : RecyclerView.Adapter<ClassListAdapter.ClassViewHolder>() {
+class ClassListAdapter(private val classList: List<Class>, private val userId: String?, private val activity: ComponentActivity) : RecyclerView.Adapter<ClassListAdapter.ClassViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ClassViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.class_item_layout, parent, false)
@@ -20,15 +21,15 @@ class ClassListAdapter(private val classList: List<Class>, private val userId: S
         holder.classDetails.text = "${classItem.classCode} - ${classItem.section} | ${classItem.daysOffered} | ${classItem.startTime} - ${classItem.endTime}"
 
         holder.itemView.setOnClickListener {
-            val context = holder.itemView.context
-            val intent = Intent(context, TeacherClassDetailActivity::class.java).apply {
+            val intent = Intent(activity, TeacherClassDetailActivity::class.java).apply {
                 putExtra("CLASS_ID", classItem._id)
                 putExtra("CLASS_CODE", classItem.classCode)
                 putExtra("SECTION", classItem.section)
                 putExtra("USER_ID", userId)
                 putExtra("DEVICE_NAME", classItem.deviceName)
+                putExtra("CLASS_NAME", classItem.name)
             }
-            context.startActivity(intent)
+            activity.startActivityForResult(intent, TeacherClassListActivity.REQUEST_CODE_CLASS_DETAIL)
         }
     }
 

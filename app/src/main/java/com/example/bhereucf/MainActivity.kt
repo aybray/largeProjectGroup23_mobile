@@ -20,6 +20,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.mainlayout)
+        
+        // Initialize RetrofitClient with application context for JWT interceptor
+        RetrofitClient.initialize(this)
 
         // Get references to UI elements
         val usernameInput: EditText = findViewById(R.id.usernameInput)
@@ -78,6 +81,11 @@ class MainActivity : ComponentActivity() {
 
                     // Check if login was successful
                     if (loginResponse.id.isNotEmpty() && loginResponse.id != "-1") {
+                        // Store JWT token if provided
+                        loginResponse.token?.let { token ->
+                            JwtTokenManager.saveToken(this@MainActivity, token)
+                        }
+                        
                         Toast.makeText(
                             this@MainActivity,
                             "Login successful, Welcome ${loginResponse.firstName} ${loginResponse.lastName}!",
@@ -85,19 +93,16 @@ class MainActivity : ComponentActivity() {
                         ).show()
 
                         // Check for teacher role (backend returns lowercase "teacher")
+                        // firstName, lastName, and role are now in JWT token - not passed via Intent
                         if (loginResponse.role.equals("teacher", ignoreCase = true)) {
                             val intent = Intent(this@MainActivity, TeacherClassListActivity::class.java)
-                            intent.putExtra("USER_ID", loginResponse.id)
-                            intent.putExtra("FIRST_NAME", loginResponse.firstName)
-                            intent.putExtra("LAST_NAME", loginResponse.lastName)
+                            intent.putExtra("USER_ID", loginResponse.id)  // Still needed for internal app logic
                             startActivity(intent)
                             finish() // Close the login activity
                         } else {
                             // Student login - navigate to student class list
                             val intent = Intent(this@MainActivity, StudentClassListActivity::class.java)
-                            intent.putExtra("USER_ID", loginResponse.id)
-                            intent.putExtra("FIRST_NAME", loginResponse.firstName)
-                            intent.putExtra("LAST_NAME", loginResponse.lastName)
+                            intent.putExtra("USER_ID", loginResponse.id)  // Still needed for internal app logic
                             startActivity(intent)
                             finish() // Close the login activity
                         }

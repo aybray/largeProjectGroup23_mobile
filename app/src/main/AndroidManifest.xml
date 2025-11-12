@@ -120,6 +120,27 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.BHereUCF">
         </activity>
+        <activity
+            android:name=".AddClassActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BHereUCF">
+        </activity>
+        <activity
+            android:name=".TeacherHistoryActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BHereUCF">
+        </activity>
+        <activity
+            android:name=".ActiveClassSessionActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BHereUCF">
+        </activity>
     </application>
 
 </manifest>

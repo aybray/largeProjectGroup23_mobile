@@ -5,6 +5,7 @@ data class LoginResponse(
     val firstName: String,
     val lastName: String,
     val role: String,
-    val error: String
+    val error: String,
+    val token: String? = null  // JWT token from backend
 )
 

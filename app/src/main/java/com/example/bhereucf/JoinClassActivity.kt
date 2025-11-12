@@ -25,16 +25,11 @@ class JoinClassActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.join_class_layout)
 
-        val backButton: ImageView = findViewById(R.id.back_button)
-        backButton.setOnClickListener {
-            finish()
-        }
-
         classCodeInput = findViewById(R.id.class_code_input)
         sectionInput = findViewById(R.id.section_input)
         joinButton = findViewById(R.id.join_class_button)
 
-        val userId = intent.getStringExtra("USER_ID")
+        // userId is now in JWT token - not passed via Intent
         // Get current classes for duplicate checking
         @Suppress("UNCHECKED_CAST")
         currentClasses = intent.getParcelableArrayListExtra<Class>("CURRENT_CLASSES") ?: emptyList()
@@ -67,10 +62,12 @@ class JoinClassActivity : ComponentActivity() {
                 return@setOnClickListener
             }
 
-            if (userId != null) {
-                joinClass(userId, classCode, section)
+            // Extract userId from JWT token only
+            val actualUserId = JwtTokenManager.getUserIdFromToken(this)
+            if (actualUserId != null) {
+                joinClass(actualUserId, classCode, section)
             } else {
-                Toast.makeText(this, "User ID not found", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Error: Unable to get user ID from token", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -88,8 +85,18 @@ class JoinClassActivity : ComponentActivity() {
         Log.d("JoinClass", "classCode: '$trimmedClassCode', section: '$trimmedSection'")
         Log.d("JoinClass", "=========================")
         
+        // Extract userId from JWT token only
+        val actualUserId = JwtTokenManager.getUserIdFromToken(this)
+        if (actualUserId == null) {
+            Toast.makeText(this, "Error: Unable to get user ID from token", Toast.LENGTH_LONG).show()
+            Log.e("JoinClass", "Failed to extract userId from JWT token")
+            joinButton.isEnabled = true
+            joinButton.text = "Join Class"
+            return
+        }
+        
         val request = JoinClassRequest(
-            userId = trimmedUserId,
+            userId = actualUserId,
             classCode = trimmedClassCode,
             section = trimmedSection
         )

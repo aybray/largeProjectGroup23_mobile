@@ -14,8 +14,10 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import android.app.AlertDialog
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -33,7 +35,6 @@ class TeacherClassDetailActivity : ComponentActivity() {
 
     private var isAdvertising = false
     private var deviceName: String? = null
-    private var userId: String? = null
     private var classId: String? = null
     private var classCode: String? = null
     private var section: String? = null
@@ -42,6 +43,14 @@ class TeacherClassDetailActivity : ComponentActivity() {
     private var broadcastName: String? = null
 
     private lateinit var advertisingStatusText: TextView
+    private lateinit var classInfoText: TextView
+    private lateinit var startClassButton: Button
+    private lateinit var deleteClassButton: Button
+    private lateinit var viewHistoryButton: Button
+
+    companion object {
+        const val REQUEST_CODE_ACTIVE_SESSION = 1003
+    }
 
     private val requestPermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -68,22 +77,66 @@ class TeacherClassDetailActivity : ComponentActivity() {
         // Get data from intent
         classId = intent.getStringExtra("CLASS_ID")
         deviceName = intent.getStringExtra("DEVICE_NAME")
-        userId = intent.getStringExtra("USER_ID")
+        // userId is now in JWT token - not passed via Intent
         classCode = intent.getStringExtra("CLASS_CODE")
         section = intent.getStringExtra("SECTION")
 
+            // Setup views
+            classInfoText = findViewById(R.id.class_info_text)
         advertisingStatusText = findViewById(R.id.advertising_status_text)
+        startClassButton = findViewById(R.id.start_class_button)
+        deleteClassButton = findViewById(R.id.delete_class_button)
+        viewHistoryButton = findViewById(R.id.view_history_button)
+        
+        Log.d("DeleteClass", "=== ACTIVITY CREATED ===")
+        Log.d("DeleteClass", "deleteClassButton initialized: ${deleteClassButton != null}")
+        Log.d("DeleteClass", "classId: $classId")
 
-        val takeAttendanceButton: Button = findViewById(R.id.take_attendance_button)
-        takeAttendanceButton.setOnClickListener {
+        // Update class info text
+        val className = intent.getStringExtra("CLASS_NAME") ?: ""
+        val classInfo = if (classCode != null && section != null) {
+            "$classCode-$section"
+        } else {
+            className
+        }
+        classInfoText.text = classInfo
+
+        // Start Class button
+        startClassButton.setOnClickListener {
             if (isAdvertising) {
-                stopAdvertising()
+                // If already advertising, navigate to active session
+                val intent = Intent(this, ActiveClassSessionActivity::class.java).apply {
+                    putExtra("CLASS_ID", classId)
+                    // userId is now in JWT token - not passed via Intent
+                    putExtra("CLASS_CODE", classCode)
+                    putExtra("SECTION", section)
+                    putExtra("BROADCAST_NAME", broadcastName)
+                    putExtra("BROADCAST_SECRET", broadcastSecret)
+                }
+                startActivityForResult(intent, REQUEST_CODE_ACTIVE_SESSION)
             } else {
-                // Before starting, try to end any existing broadcast first if prepareBroadcast fails
                 requestPermissionsAndStartAdvertising()
             }
         }
-    }
+
+        // Delete Class button
+        Log.d("DeleteClass", "Setting up delete button click listener")
+        deleteClassButton.setOnClickListener {
+            Log.d("DeleteClass", "=== DELETE BUTTON CLICKED ===")
+            Log.d("DeleteClass", "Button is clickable: ${deleteClassButton.isClickable}")
+            Log.d("DeleteClass", "Button is enabled: ${deleteClassButton.isEnabled}")
+            showDeleteConfirmationDialog()
+        }
+        Log.d("DeleteClass", "Delete button click listener set up")
+
+            // View History button
+            viewHistoryButton.setOnClickListener {
+                viewHistory()
+            }
+
+            // Initialize advertise callback
+            advertiseCallback = createAdvertiseCallback()
+        }
 
     private fun requestPermissionsAndStartAdvertising() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -106,9 +159,9 @@ class TeacherClassDetailActivity : ComponentActivity() {
 
     private fun startAdvertisingFlow() {
         // Validate required data
-        if (userId.isNullOrEmpty() || classId.isNullOrEmpty()) {
+        if (classId.isNullOrEmpty()) {
             Toast.makeText(this, "Missing class information.", Toast.LENGTH_LONG).show()
-            Log.e("Broadcast", "Missing userId or classId - userId: $userId, classId: $classId")
+            Log.e("Broadcast", "Missing classId - classId: $classId")
             return
         }
         
@@ -118,12 +171,6 @@ class TeacherClassDetailActivity : ComponentActivity() {
     
     private fun prepareBroadcastAPI() {
         // Validate all required fields
-        if (userId.isNullOrEmpty()) {
-            Toast.makeText(this, "Error: User ID is missing", Toast.LENGTH_LONG).show()
-            Log.e("Broadcast", "User ID is null or empty")
-            return
-        }
-        
         if (classId.isNullOrEmpty()) {
             Toast.makeText(this, "Error: Class ID is missing", Toast.LENGTH_LONG).show()
             Log.e("Broadcast", "Class ID is null or empty")
@@ -136,10 +183,17 @@ class TeacherClassDetailActivity : ComponentActivity() {
             return
         }
         
-        Log.d("Broadcast", "Sending prepareBroadcast - userId: $userId, objectId: $classId")
+        // Extract userId from JWT token only
+        val actualUserId = JwtTokenManager.getUserIdFromToken(this)
+        if (actualUserId == null) {
+            Toast.makeText(this, "Error: Unable to get user ID from token", Toast.LENGTH_LONG).show()
+            Log.e("Broadcast", "Failed to extract userId from JWT token")
+            return
+        }
+        Log.d("Broadcast", "Sending prepareBroadcast - userId: $actualUserId, objectId: $classId")
         
         val request = PrepareBroadcastRequest(
-            userId = userId!!,
+            userId = actualUserId,
             objectId = classId!!
         )
         
@@ -161,7 +215,7 @@ class TeacherClassDetailActivity : ComponentActivity() {
                 } else {
                     val errorBody = response.errorBody()?.string()
                     Log.e("Broadcast", "HTTP ${response.code()} - Error body: $errorBody")
-                    Log.e("Broadcast", "Request sent - userId: $userId, objectId: $classId")
+                    Log.e("Broadcast", "Request sent - objectId: $classId")
                     
                     // Parse error message to provide helpful feedback
                     val errorMsg = try {
@@ -223,10 +277,17 @@ class TeacherClassDetailActivity : ComponentActivity() {
         broadcastName = formattedBroadcastName
         broadcastSecret = secret
         
+        // Extract userId from JWT token only
+        val actualUserId = JwtTokenManager.getUserIdFromToken(this)
+        if (actualUserId == null) {
+            Toast.makeText(this, "Error: Unable to get user ID from token", Toast.LENGTH_LONG).show()
+            Log.e("Broadcast", "Failed to extract userId from JWT token")
+            return
+        }
         Log.d("Broadcast", "Generated secret: $secret, broadcast name: $formattedBroadcastName")
         
         val request = NewSecretRequest(
-            userId = userId!!,
+            userId = actualUserId,
             objectId = classId!!,
             secret = secret
         )
@@ -263,10 +324,12 @@ class TeacherClassDetailActivity : ComponentActivity() {
     }
     
     private fun generateSecretHash(): String {
+        // Extract userId from JWT token only
+        val actualUserId = JwtTokenManager.getUserIdFromToken(this) ?: ""
         // Generate a unique secret hash using UUID and timestamp
         val timestamp = System.currentTimeMillis()
         val uuid = UUID.randomUUID().toString().replace("-", "")
-        val combined = "$timestamp$uuid${classCode}${section}${userId}"
+        val combined = "$timestamp$uuid${classCode}${section}$actualUserId"
         
         // Create a short hash (8 characters) from the combined string
         val digest = MessageDigest.getInstance("SHA-256")
@@ -277,30 +340,57 @@ class TeacherClassDetailActivity : ComponentActivity() {
         return hexString.substring(0, 8)
     }
 
-    private val advertiseCallback = object : AdvertiseCallback() {
-        override fun onStartSuccess(settingsInEffect: AdvertiseSettings?) {
-            isAdvertising = true
-            val broadcastDisplayName = broadcastName ?: deviceName ?: "Unknown"
-            val status = "Status: Advertising\nName: $broadcastDisplayName"
-            advertisingStatusText.text = status
-            Log.d("BleAdvertiser", "Advertising started with name: $broadcastDisplayName")
-            Toast.makeText(this@TeacherClassDetailActivity, "Broadcast started", Toast.LENGTH_SHORT).show()
-        }
-        override fun onStartFailure(errorCode: Int) {
-            isAdvertising = false
-            val errorMessage = when (errorCode) {
-                AdvertiseCallback.ADVERTISE_FAILED_ALREADY_STARTED -> "Advertising already started"
-                AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE -> "Advertisement data too large"
-                AdvertiseCallback.ADVERTISE_FAILED_FEATURE_UNSUPPORTED -> "BLE advertising not supported"
-                AdvertiseCallback.ADVERTISE_FAILED_INTERNAL_ERROR -> "Internal error"
-                AdvertiseCallback.ADVERTISE_FAILED_TOO_MANY_ADVERTISERS -> "Too many advertisers"
-                else -> "Advertise failed: $errorCode"
+        private lateinit var advertiseCallback: AdvertiseCallback
+        
+        private fun createAdvertiseCallback(): AdvertiseCallback {
+            return object : AdvertiseCallback() {
+                override fun onStartSuccess(settingsInEffect: AdvertiseSettings?) {
+                    isAdvertising = true
+                    val broadcastDisplayName = broadcastName ?: deviceName ?: "Unknown"
+                    Log.d("BleAdvertiser", "Advertising started with name: $broadcastDisplayName")
+                    
+                    // Stop advertising here (ActiveClassSessionActivity will restart it)
+                    @SuppressLint("MissingPermission")
+                    val localBluetoothLeAdvertiser = bluetoothLeAdvertiser
+                    if (localBluetoothLeAdvertiser != null && ::advertiseCallback.isInitialized) {
+                        try {
+                            localBluetoothLeAdvertiser.stopAdvertising(advertiseCallback)
+                        } catch (e: Exception) {
+                            Log.e("BleAdvertiser", "Error stopping advertising", e)
+                        }
+                    }
+                    isAdvertising = false
+                    
+                    // Navigate to active class session activity
+                    val intent = Intent(this@TeacherClassDetailActivity, ActiveClassSessionActivity::class.java).apply {
+                        putExtra("CLASS_ID", classId)
+                        // userId is now in JWT token - not passed via Intent
+                        putExtra("CLASS_CODE", classCode)
+                        putExtra("SECTION", section)
+                        putExtra("BROADCAST_NAME", broadcastDisplayName)
+                        putExtra("BROADCAST_SECRET", broadcastSecret)
+                    }
+                    startActivityForResult(intent, REQUEST_CODE_ACTIVE_SESSION)
+                }
+                
+                override fun onStartFailure(errorCode: Int) {
+                    isAdvertising = false
+                    val errorMessage = when (errorCode) {
+                        AdvertiseCallback.ADVERTISE_FAILED_ALREADY_STARTED -> "Advertising already started"
+                        AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE -> "Advertisement data too large"
+                        AdvertiseCallback.ADVERTISE_FAILED_FEATURE_UNSUPPORTED -> "BLE advertising not supported"
+                        AdvertiseCallback.ADVERTISE_FAILED_INTERNAL_ERROR -> "Internal error"
+                        AdvertiseCallback.ADVERTISE_FAILED_TOO_MANY_ADVERTISERS -> "Too many advertisers"
+                        else -> "Advertise failed: $errorCode"
+                    }
+                    advertisingStatusText.text = "Status: Not Advertising\nError: $errorMessage"
+                    advertisingStatusText.visibility = android.view.View.VISIBLE
+                    startClassButton.text = "Start Class"
+                    Log.e("BleAdvertiser", errorMessage)
+                    Toast.makeText(this@TeacherClassDetailActivity, errorMessage, Toast.LENGTH_LONG).show()
+                }
             }
-            advertisingStatusText.text = "Status: Not Advertising\nError: $errorMessage"
-            Log.e("BleAdvertiser", errorMessage)
-            Toast.makeText(this@TeacherClassDetailActivity, errorMessage, Toast.LENGTH_LONG).show()
         }
-    }
 
     @SuppressLint("MissingPermission")
     private fun startAdvertising(name: String) {
@@ -359,26 +449,37 @@ class TeacherClassDetailActivity : ComponentActivity() {
             originalBluetoothName?.let { bluetoothAdapter?.name = it }
             isAdvertising = false
             advertisingStatusText.text = "Status: Not Advertising"
+            advertisingStatusText.visibility = android.view.View.GONE
+            startClassButton.text = "Start Class"
         } catch (se: SecurityException) {
             Log.e("BleAdvertiser", "stopAdvertising SecurityException", se)
         }
         
         // Call API to end broadcast
-        if (!userId.isNullOrEmpty() && !classId.isNullOrEmpty()) {
+        if (!classId.isNullOrEmpty()) {
             endBroadcastAPI()
         } else {
             Toast.makeText(this, "Broadcast stopped", Toast.LENGTH_SHORT).show()
-            Log.w("Broadcast", "Cannot end broadcast - missing userId or classId. userId: $userId, classId: $classId")
+            Log.w("Broadcast", "Cannot end broadcast - missing classId. classId: $classId")
         }
     }
     
     private fun endBroadcastAPI(onComplete: ((Boolean) -> Unit)? = null) {
+        // Extract userId from JWT token only
+        val actualUserId = JwtTokenManager.getUserIdFromToken(this)
+        if (actualUserId == null) {
+            Toast.makeText(this, "Error: Unable to get user ID from token", Toast.LENGTH_LONG).show()
+            Log.e("Broadcast", "Failed to extract userId from JWT token")
+            onComplete?.invoke(false)
+            return
+        }
+
         val request = EndBroadcastRequest(
-            userId = userId!!,
+            userId = actualUserId,
             objectId = classId!!
         )
         
-        Log.d("Broadcast", "Ending broadcast - userId: $userId, objectId: $classId")
+        Log.d("Broadcast", "Ending broadcast - userId: $actualUserId, objectId: $classId")
         
         val call = RetrofitClient.apiService.endBroadcast(request)
         call.enqueue(object : Callback<Unit> {
@@ -401,6 +502,133 @@ class TeacherClassDetailActivity : ComponentActivity() {
                 onComplete?.invoke(false)
             }
         })
+    }
+
+    private fun showDeleteConfirmationDialog() {
+        Log.d("DeleteClass", "=== SHOW DELETE DIALOG ===")
+        Log.d("DeleteClass", "classId: $classId")
+        Log.d("DeleteClass", "=========================")
+        
+        AlertDialog.Builder(this)
+            .setTitle("Delete Class")
+            .setMessage("Are you sure you want to delete this class? This will remove all students from the class and delete all attendance records. This action cannot be undone.")
+            .setPositiveButton("Delete") { _, _ ->
+                Log.d("DeleteClass", "=== DELETE CONFIRMED IN DIALOG ===")
+                deleteClass()
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                Log.d("DeleteClass", "Delete cancelled by user")
+            }
+            .setOnDismissListener {
+                Log.d("DeleteClass", "Dialog dismissed")
+            }
+            .show()
+    }
+
+    private fun deleteClass() {
+        if (classId.isNullOrEmpty()) {
+            Toast.makeText(this, "Missing class information", Toast.LENGTH_SHORT).show()
+            Log.e("DeleteClass", "Missing data - classId: $classId")
+            return
+        }
+
+        val trimmedClassId = classId!!.trim()
+
+        Log.d("DeleteClass", "=== DELETE CLASS REQUEST ===")
+        Log.d("DeleteClass", "classId: '$trimmedClassId'")
+        Log.d("DeleteClass", "=========================")
+
+        // Extract userId from JWT token only
+        val actualUserId = JwtTokenManager.getUserIdFromToken(this)
+        if (actualUserId == null) {
+            Toast.makeText(this, "Error: Unable to get user ID from token", Toast.LENGTH_LONG).show()
+            Log.e("DeleteClass", "Failed to extract userId from JWT token")
+            return
+        }
+
+        val request = DeleteClassRequest(
+            userId = actualUserId,
+            classId = trimmedClassId
+        )
+
+        Log.d("DeleteClass", "Making API call with request: userId='$actualUserId', classId='$trimmedClassId'")
+        
+        val call = RetrofitClient.apiService.deleteClass(request)
+        call.enqueue(object : Callback<DeleteClassResponse> {
+            override fun onResponse(call: Call<DeleteClassResponse>, response: Response<DeleteClassResponse>) {
+                Log.d("DeleteClass", "Response received - code: ${response.code()}, isSuccessful: ${response.isSuccessful}")
+                
+                if (response.isSuccessful) {
+                    val deleteResponse = response.body()
+                    if (deleteResponse != null) {
+                        Log.d("DeleteClass", "Response body: error='${deleteResponse.error}'")
+                        if (deleteResponse.error.isEmpty()) {
+                            Log.d("DeleteClass", "Class deleted successfully")
+                            Log.d("DeleteClass", "Setting RESULT_OK and finishing activity")
+                            Toast.makeText(this@TeacherClassDetailActivity, "Class deleted successfully", Toast.LENGTH_SHORT).show()
+                            setResult(RESULT_OK)
+                            finish()
+                        } else {
+                            Log.e("DeleteClass", "Error in response: ${deleteResponse.error}")
+                            Toast.makeText(this@TeacherClassDetailActivity, "Error: ${deleteResponse.error}", Toast.LENGTH_LONG).show()
+                        }
+                    } else {
+                        // Response body is null, but status is successful - might be empty response
+                        Log.d("DeleteClass", "Response body is null, but status is successful - treating as success")
+                        Log.d("DeleteClass", "Setting RESULT_OK and finishing activity")
+                        Toast.makeText(this@TeacherClassDetailActivity, "Class deleted successfully", Toast.LENGTH_SHORT).show()
+                        setResult(RESULT_OK)
+                        finish()
+                    }
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    Log.e("DeleteClass", "HTTP ${response.code()} - Error body: $errorBody")
+                    
+                    val errorMsg = try {
+                        if (errorBody != null && errorBody.contains("\"error\"")) {
+                            val jsonObject = org.json.JSONObject(errorBody)
+                            jsonObject.optString("error", errorBody)
+                        } else {
+                            errorBody ?: "Failed to delete class (HTTP ${response.code()})"
+                        }
+                    } catch (e: Exception) {
+                        Log.e("DeleteClass", "Error parsing error body", e)
+                        errorBody ?: "Failed to delete class (HTTP ${response.code()})"
+                    }
+                    Log.e("DeleteClass", "Error message: $errorMsg")
+                    Toast.makeText(this@TeacherClassDetailActivity, errorMsg, Toast.LENGTH_LONG).show()
+                }
+            }
+
+            override fun onFailure(call: Call<DeleteClassResponse>, t: Throwable) {
+                Log.e("DeleteClass", "Network error: ${t.message}", t)
+                Toast.makeText(this@TeacherClassDetailActivity, "Network error: ${t.message}", Toast.LENGTH_LONG).show()
+            }
+        })
+    }
+
+    private fun viewHistory() {
+        if (classId.isNullOrEmpty()) {
+            Toast.makeText(this, "Missing class information", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val intent = Intent(this, TeacherHistoryActivity::class.java).apply {
+            putExtra("CLASS_ID", classId)
+            putExtra("CLASS_CODE", classCode)
+            putExtra("SECTION", section)
+        }
+        startActivity(intent)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_ACTIVE_SESSION && resultCode == RESULT_OK) {
+            // Class session ended, update UI
+            isAdvertising = false
+            startClassButton.text = "Start Class"
+            advertisingStatusText.visibility = android.view.View.GONE
+        }
     }
 }
 

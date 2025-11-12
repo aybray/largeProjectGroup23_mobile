@@ -18,16 +18,12 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:id="@+id/back_button"
+            android:id="@+id/logo"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_marginStart="16dp"
-            android:contentDescription="Back"
-            android:src="@drawable/ic_arrow_back"
-            android:tint="@color/ucf_bright_gold"
-            android:background="@android:color/transparent"
-            android:padding="8dp"
-            android:visibility="gone"
+            android:contentDescription="App logo"
+            android:src="@drawable/logo"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -42,20 +38,29 @@
             android:textColor="@color/ucf_bright_gold"
             android:textSize="36sp"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/spacer"
+            app:layout_constraintStart_toEndOf="@+id/logo"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Space
+            android:id="@+id/spacer"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Class Info Bar (Blue) -->
+    <!-- Class Info Bar (Yellow) -->
     <TextView
         android:id="@+id/class_info_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/blue"
+        android:background="@color/ucf_bright_gold"
         android:padding="16dp"
-        android:textColor="@color/white"
+        android:textColor="@color/ucf_black"
         android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -63,17 +68,20 @@
 
     <!-- Confirmation Box -->
     <androidx.cardview.widget.CardView
+        android:id="@+id/confirmation_card"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="100dp"
         android:layout_marginEnd="32dp"
-        app:cardBackgroundColor="@color/blue"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="@color/light_green"
         app:cardCornerRadius="12dp"
         app:cardElevation="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/class_info_text">
+        app:layout_constraintTop_toBottomOf="@+id/class_info_text"
+        app:layout_constraintBottom_toTopOf="@+id/ok_button">
 
         <TextView
             android:id="@+id/confirmation_text"
@@ -94,18 +102,18 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
         android:layout_marginEnd="32dp"
+        android:layout_marginBottom="48dp"
         android:background="@drawable/rounded_corners"
         android:backgroundTint="@color/ucf_bright_gold"
         android:paddingVertical="16dp"
         android:text="OK"
-        android:textColor="@color/white"
+        android:textColor="@color/ucf_black"
         android:textSize="18sp"
         android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/confirmation_text" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

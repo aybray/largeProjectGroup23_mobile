@@ -5,9 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.RecyclerView
 
-class StudentClassListAdapter(private val classList: List<Class>, private val userId: String?) : RecyclerView.Adapter<StudentClassListAdapter.ClassViewHolder>() {
+class StudentClassListAdapter(private val classList: List<Class>, private val userId: String?, private val activity: ComponentActivity) : RecyclerView.Adapter<StudentClassListAdapter.ClassViewHolder>() {
 
     fun getClassList(): List<Class> = classList
 
@@ -22,8 +23,7 @@ class StudentClassListAdapter(private val classList: List<Class>, private val us
         holder.classDetails.text = "${classItem.classCode} - ${classItem.section} | ${classItem.daysOffered} | ${classItem.startTime} - ${classItem.endTime}"
 
         holder.itemView.setOnClickListener {
-            val context = holder.itemView.context
-            val intent = Intent(context, StudentAttendanceActivity::class.java).apply {
+            val intent = Intent(activity, StudentAttendanceActivity::class.java).apply {
                 putExtra("CLASS_ID", classItem._id)
                 putExtra("CLASS_CODE", classItem.classCode)
                 putExtra("SECTION", classItem.section)
@@ -31,7 +31,8 @@ class StudentClassListAdapter(private val classList: List<Class>, private val us
                 putExtra("CLASS_NAME", classItem.name)
                 putExtra("DEVICE_NAME", classItem.deviceName)
             }
-            context.startActivity(intent)
+            // Use startActivityForResult to detect when a class is left
+            activity.startActivityForResult(intent, StudentClassListActivity.REQUEST_CODE_ATTENDANCE)
         }
     }
 
